@@ -10,10 +10,14 @@ def download_wallpaper(wallpaper_url, wallpaper_path):
     :param wallpaper_path: 保存路径。
     """
     try:
-        img_data = requests.get(wallpaper_url).content
+        response = requests.get(wallpaper_url)
+        response.raise_for_status()  # 检查请求是否成功
+        img_data = response.content
         with open(wallpaper_path, "wb") as f:
             f.write(img_data)
         print(f"壁纸已保存到: {wallpaper_path}")
+    except requests.exceptions.HTTPError as http_err:
+        print(f"HTTP 错误: {http_err}")  # 更详细的错误信息
     except Exception as e:
         print(f"下载壁纸失败: {e}")
 
@@ -37,7 +41,7 @@ def get_bing_wallpapers(count=8):
         script_dir = os.path.dirname(os.path.abspath(__file__))
         save_dir = os.path.join(script_dir, "Bing_Wallpapers")
         if not os.path.exists(save_dir):
-            os.makedirs(save_dir)
+            os.makedirs(save_dir, exist_ok=True)  # 避免重复创建文件夹时抛出异常
 
         # 准备下载任务
         tasks = []
@@ -51,6 +55,7 @@ def get_bing_wallpapers(count=8):
             # 等待所有任务完成
             for task in tasks:
                 task.result()
+        print("所有壁纸下载完成。")  # 下载任务完成后的日志信息
 
     except Exception as e:
         print(f"获取必应壁纸失败: {e}")
