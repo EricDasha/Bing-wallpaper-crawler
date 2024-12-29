@@ -1,4 +1,5 @@
 import os
+import sys
 import requests
 from concurrent.futures import ThreadPoolExecutor
 
@@ -21,6 +22,14 @@ def download_wallpaper(wallpaper_url, wallpaper_path):
     except Exception as e:
         print(f"下载壁纸失败: {e}")
 
+def get_real_path():
+    """
+    获取实际运行时的文件所在路径（包括 pyinstaller 打包后的情况）。
+    """
+    if getattr(sys, 'frozen', False):  # 被 pyinstaller 打包时
+        return os.path.dirname(sys.executable)  # 可执行文件所在目录
+    return os.path.dirname(os.path.abspath(__file__))  # 脚本所在目录
+
 def get_bing_wallpapers(count=8):
     """
     爬取必应最近几天的壁纸并保存到指定文件夹。
@@ -38,8 +47,8 @@ def get_bing_wallpapers(count=8):
         data = response.json()
 
         # 创建保存壁纸的文件夹
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        save_dir = os.path.join(script_dir, "Bing_Wallpapers")
+        real_path = get_real_path()
+        save_dir = os.path.join(real_path, "Bing_Wallpapers")
         if not os.path.exists(save_dir):
             os.makedirs(save_dir, exist_ok=True)  # 避免重复创建文件夹时抛出异常
 
